@@ -1,0 +1,6 @@
+#ifndef __STM32_CONFIGURATION_H__
+#define __STM32_CONFIGURATION_H__
+
+#define REPORT_MODE_POLLING
+
+#endif

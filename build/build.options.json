@@ -1,0 +1,11 @@
+{
+  "additionalFiles": "",
+  "builtInLibrariesFolders": "C:\\Program Files (x86)\\Arduino\\libraries",
+  "customBuildProperties": "build.path=c:\\Users\\ArtRonin\\Documents\\PlatformIO\\Projects\\gogo-stm32-firmware\\build,build.warn_data_percentage=75",
+  "fqbn": "Arduino_STM32:STM32F1:genericSTM32F103C:device_variant=STM32F103C8,upload_method=HIDUploadMethod,cpu_speed=speed_72mhz,opt=osstd",
+  "hardwareFolders": "C:\\Program Files (x86)\\Arduino\\hardware,C:\\Users\\ArtRonin\\AppData\\Local\\Arduino15\\packages,C:\\Users\\ArtRonin\\Documents\\Arduino\\hardware",
+  "otherLibrariesFolders": "C:\\Users\\ArtRonin\\Documents\\Arduino\\libraries",
+  "runtime.ide.version": "10809",
+  "sketchLocation": "c:\\Users\\ArtRonin\\Documents\\PlatformIO\\Projects\\gogo-stm32-firmware\\src\\stm-arduino-firmware.cpp",
+  "toolsFolders": "C:\\Program Files (x86)\\Arduino\\tools-builder,C:\\Program Files (x86)\\Arduino\\hardware\\tools\\avr,C:\\Users\\ArtRonin\\AppData\\Local\\Arduino15\\packages"
+}
