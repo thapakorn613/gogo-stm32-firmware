@@ -11,10 +11,8 @@
 //* ===================================================
 //* Serial operations
 //* ===================================================
-#define EspSerial Serial
+// #define EspSerial Serial2
 #define DebugSerial Serial1
-// #define Debug2Serial Serial2
-// #define Debug3Serial Serial3
 #define PASSTHROUGH_BYTE 17
 
 

@@ -6,20 +6,15 @@
 #include "stm-arduino-firmware.h"
 // #include "stm32-firmware.h"
 #include "stm32-uart.h"
-#include "stm32-peripherals.h"
 #include "stm32-configuration.h"
 
-#define USB_CONFIG_HID_TX_SIZE 64
-#define USB_CONFIG_HID_RX_SIZE 64
 #define REPORT_PACKET_SIZE 16
 
-#define STATUS_LED PC13
 
 // * ////////////////////////////////////////////////////////////
 // *	Global Serial Buffer
 // * ////////////////////////////////////////////////////////////
 
-uint8 buf[USB_CONFIG_HID_RX_SIZE];
 uint8 inByte;
 
 uint8 gbl1stCMDBuffer[SER_BUFFER_SIZE];
@@ -35,7 +30,6 @@ bool reportPktReady = false;
 uint8_t reportPkt_readRegVal = 0;
 int inBytePktBegin = 4;
 
-// uint8 headerSerialPkt[4] = {0x54, 0xFE, USB_CONFIG_HID_RX_SIZE + 2, 0};
 // * ////////////////////////////////////////////////////////////
 // *	Global Variables
 // * ////////////////////////////////////////////////////////////
@@ -49,29 +43,14 @@ int hbCounter = 0;
 bool gblIsTimeToToggleLED = false;
 bool gblToggleLED = false;
 
-bool gblHIDDataReadyToSend = false;
 bool gblSerialPassthrough = false;
 uint8 gblSerialTxLen = 0;
 uint8 gblHIDCmdChecksum = 0;
-
-bool gblEspFlashingCDC = false;
 
 int toggle = 0;
 
 uint8_t reg_index[9] = {0x91, 0x92, 0x93, 0x94, 0x95, 0x96, 0x97, 0x98, 0x99};
 uint8_t gblRegStm[16];
-
-// stm32_peripheral::stm32_peripheral(void)
-// {
-//   // status led initialize //* this also use to indicated bootloader status
-// }
-
-// void stm32_peripheral::begin()
-// {
-//   pinMode(STATUS_LED, OUTPUT);
-// }
-
-// stm32_peripheral gogoIO;
 
 // * ////////////////////////////////////////////////////////////
 // *	EspSerial USART1 interrupt handler
@@ -120,7 +99,6 @@ void usartSerialEvent(uint8 inByte)
         }
         else // else store the cmd in the buffer
         {
-            // gblNewCmdReady = false;
 
             // if this is a serial-passthrough packet
             if ((gblSerialCmdCounter == 0) && (inByte == 17))
@@ -138,12 +116,10 @@ void usartSerialEvent(uint8 inByte)
             {
                 if (gblUseFirstCmdBuffer)
                 {
-                    // DebugSerial.print("aX3-1 ");
                     gbl1stCMDBuffer[gblSerialCmdCounter++] = inByte;
                 }
                 else
                 {
-                    // DebugSerial.print("aX3-2 ");
                     gbl2ndCMDBuffer[gblSerialCmdCounter++] = inByte;
                 }
                 gblSerialCmdChecksum += inByte;
@@ -217,18 +193,13 @@ void sendReportPacket()
     {
         //? report stuff goes here !
         uint8 gblReportChecksum = 0;
-
-        // EspSerial.write(headerReportPkt, 3);
         DebugSerial.write(headerReportPkt, 4);
 
         for (int i = 0; i < REPORT_PACKET_SIZE; i++)
         {
-            // EspSerial.write(gblSTMReport[i]);
             DebugSerial.write(gblSTMReport[i]);
             gblReportChecksum += gblSTMReport[i];
         }
-
-        // EspSerial.write(gblReportChecksum);
         DebugSerial.write(gblReportChecksum);
         // clearCmdPktFlag();
         gblTimeToSendReport = false;
@@ -241,17 +212,14 @@ void sendReportPacket()
         //? report stuff goes here !
         uint8 gblReportChecksum = 0;
 
-        // EspSerial.write(headerReportPkt, 3);
         DebugSerial.write(headerReportPkt, 4);
 
         for (int i = 0; i < REPORT_PACKET_SIZE; i++)
         {
-            // EspSerial.write(gblSTMReport[i]);
             DebugSerial.write(gblSTMReport[i]);
             gblReportChecksum += gblSTMReport[i];
         }
 
-        // EspSerial.write(gblReportChecksum);
         DebugSerial.write(gblReportChecksum);
         // clearCmdPktFlag();
         gblTimeToSendReport = false;
@@ -266,14 +234,12 @@ void processCMD(uint8 *inBytePkt)
         switch (*(inBytePkt + 1))
         {
         case CMD_CATEGORY_ID:
-            // DebugSerial.print("-cmd_category_id 1-");
             if (*(inBytePkt + 2) == CMD_READ_REG)
             {
                 uint8_t temp = *(inBytePkt + 3) - 1;
                 gblSTMReport[1] = 0x03;
                 gblSTMReport[2] = 0x01;
-                gblSTMReport[3] = reg_index[temp];
-                // gogoIO.MotorControl(MTR_ON, *(inBytePkt + 2));
+                gblSTMReport[3] = gblRegStm[temp];
             }
             else if (*(inBytePkt + 2) == CMD_SEND_STM_RX)
             {
@@ -281,26 +247,12 @@ void processCMD(uint8 *inBytePkt)
                 for (int i = 0; i < lenghtPkt; i++)
                 {
                     gblRegStm[i] = *(inBytePkt + inBytePktBegin + i);
-                    // gblSTMReport[i+1] = *(inBytePkt + inBytePktBegin + i);
+                    gblSTMReport[i+1] = *(inBytePkt + inBytePktBegin + i);  // For Debug
                 }
-                // gogoIO.MotorControl(MTR_OFF, *(inBytePkt + 2));
             }
 #ifdef REPORT_MODE_POLLING
             reportPktReady = true;
 #endif
-            break;
-        case CMD_SEND_STM_RX:
-            // DebugSerial.print("-cmd_category_id 2-");
-            // DebugSerial.print("-X3-");
-            if (*(inBytePkt + 2) == CMD_READ_REG)
-            {
-                // DebugSerial.print("Reg ISDfndex : ");
-                // gogoIO.MotorControl(MTR_ON, *(inBytePkt + 2));
-            }
-            else
-            {
-                // gogoIO.MotorControl(MTR_OFF, *(inBytePkt + 2));
-            }
             break;
 
         case CMD_REBOOT:
@@ -347,9 +299,8 @@ void heartbeatLED()
 {
     if (gblIsTimeToToggleLED)
     {
-        // toggle ^= 1;
-        // digitalWrite(STATUS_LED, toggle);
-        // DebugSerial.print("R")  ;
+        toggle ^= 1;
+        digitalWrite(STATUS_LED, toggle);
         gblIsTimeToToggleLED = false;
     }
 }
